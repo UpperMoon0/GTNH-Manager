@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Dev\\Workspace\\C_Sharp\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager.csproj": {}
+    "D:\\Dev\\Workspace\\C_Sharp\\GTNH-Manager\\GTNH_Manager\\GTNH_Manager.csproj": {}
   },
   "projects": {
-    "D:\\Dev\\Workspace\\C_Sharp\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager.csproj": {
+    "D:\\Dev\\Workspace\\C_Sharp\\GTNH-Manager\\GTNH_Manager\\GTNH_Manager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Dev\\Workspace\\C_Sharp\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager.csproj",
+        "projectUniqueName": "D:\\Dev\\Workspace\\C_Sharp\\GTNH-Manager\\GTNH_Manager\\GTNH_Manager.csproj",
         "projectName": "GTNH_Manager",
-        "projectPath": "D:\\Dev\\Workspace\\C_Sharp\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager.csproj",
+        "projectPath": "D:\\Dev\\Workspace\\C_Sharp\\GTNH-Manager\\GTNH_Manager\\GTNH_Manager.csproj",
         "packagesPath": "C:\\Users\\vongu\\.nuget\\packages\\",
-        "outputPath": "D:\\Dev\\Workspace\\C_Sharp\\GTNH_Manager\\GTNH_Manager\\GTNH_Manager\\obj\\",
+        "outputPath": "D:\\Dev\\Workspace\\C_Sharp\\GTNH-Manager\\GTNH_Manager\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\vongu\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -39,6 +39,16 @@
       "frameworks": {
         "net6.0-windows7.0": {
           "targetAlias": "net6.0-windows",
+          "dependencies": {
+            "DotNetZip": {
+              "target": "Package",
+              "version": "[1.16.0, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
