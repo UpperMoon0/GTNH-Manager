@@ -1,182 +1,201 @@
 using System;
 using System.Diagnostics;
-using System.IO.Compression;
-using System.Net;
+using System.Security.Cryptography;
 using Ionic.Zip;
-using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace GTNH_Manager
 {
     public partial class GTNHManager : Form
     {
-        string version = "0.1";
+        private string version = "0.2";
+        private DateTime lastUpdateTime = DateTime.MinValue;
+        private string lastRemainingTime = "";
         public GTNHManager()
         {
             InitializeComponent();
-            versionListBox.Items.Add("2.3.5 BETA");
+            versionListBox.Items.Add("2.3.5");
+            versionListBox.Items.Add("2.3.4");
+            versionListBox.Items.Add("2.3.3");
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void installButton_Click(object sender, EventArgs e)
         {
-        }
-
-        // This method is called when the downloadButton is clicked
-        private async void downloadButton_Click(object sender, EventArgs e)
-        {
-            // Check if the path specified in the multiMCPathTextBox is valid
+            // Check if the MultiMC path is valid and if a version is selected
             if (IsMultiMCPathValid() && versionListBox.SelectedItem != null)
             {
-                // Check if an item is selected in the versionListBox and if the selected item is "2.3.5 BETA"
-                if (versionListBox.SelectedItem != null && versionListBox.SelectedItem.ToString() == "2.3.5 BETA")
+                // Disable the widgets
+                installButton.Enabled = false;
+                multiMCPathTextBox.Enabled = false;
+                versionListBox.Enabled = false;
+                optifineCheckBox.Enabled = false;
+
+                // Get the selected version
+                string? selectedVersion = versionListBox.SelectedItem.ToString();
+
+                // Get the URL for the selected version
+                if (selectedVersion != null && ModpackVersion.getUrlDict.TryGetValue(selectedVersion, out string? downloadUrl))
                 {
-                    // Set the URL of the file to download
-                    string url = "https://www.dropbox.com/scl/fi/r5ohaxwfzvyrphx2bn6zj/GT_New_Horizons_2.3.5_Client_Java_17-20.zip?dl=1&rlkey=spfjszkg02nrej3eqds42r0cg";
-                    // Set the path of the temporary folder
-                    string tempPath = Path.GetTempPath();
-                    // Set the path of the file to save in the temporary folder
-                    string filePath = Path.Combine(tempPath, "GT_New_Horizons_2.3.5_Client_Java_17-20.zip");
-                    // Update the statusLabel text and color
+                    // Set the temporary folder path and file path
+                    string tempFolderPath = Path.GetTempPath();
+                    string filePath = Path.Combine(tempFolderPath, $"GT_New_Horizons_{versionListBox.SelectedItem.ToString()}_Client_Java_17-20.zip");
+
+                    // Update the status label
                     UpdateStatusLabel("Downloading the modpack", Color.Blue);
 
-                    // Create a new HttpClient to download the file
-                    using (HttpClient client = new HttpClient())
-                    {
-                        // Send a GET request to the specified URL
-                        HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                        // Check if the response was successful
-                        if (response.IsSuccessStatusCode)
-                        {
-                            // Get the content length of the response
-                            long? contentLength = response.Content.Headers.ContentLength;
-                            // Get the content stream of the response
-                            using (Stream stream = await response.Content.ReadAsStreamAsync())
-                            // Create a new FileStream to save the content to a file
-                            using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                            {
-                                // Download the file and track its progress
-                                await InstallFile(stream, fileStream, contentLength);
-                            }
-                        }
-                    }
+                    // Download the file using HttpClient
+                    await InstallModpackFile(downloadUrl, filePath);
+
+                    // Update the progress and status labels
                     progressLabel.Text = "";
                     UpdateStatusLabel("Installation complete", Color.Green);
                 }
+                else
+                {
+                    UpdateStatusLabel("Download failed", Color.Red);
+                }
+
+                // Enable the widgets
+                installButton.Enabled = true;
+                multiMCPathTextBox.Enabled = true;
+                versionListBox.Enabled = true;
+                optifineCheckBox.Enabled = true;
             }
-            if (!IsMultiMCPathValid() && versionListBox.SelectedItem == null)
-                UpdateStatusLabel("Invalid MultiMC path and version", Color.Red);
-            else if (!IsMultiMCPathValid())
-                UpdateStatusLabel("Invalid MultiMC path", Color.Red);
-            else if (versionListBox.SelectedItem == null)
-                UpdateStatusLabel("Select a version", Color.Red);   
+            else
+            {
+                // Update the status label with an appropriate message
+                if (!IsMultiMCPathValid() && versionListBox.SelectedItem == null)
+                    UpdateStatusLabel("Invalid MultiMC path and version", Color.Red);
+                else if (!IsMultiMCPathValid())
+                    UpdateStatusLabel("Invalid MultiMC path", Color.Red);
+                else if (versionListBox.SelectedItem == null)
+                    UpdateStatusLabel("Select a version", Color.Red);
+            }
         }
 
-        // This method checks if the path specified in the multiMCPathTextBox is valid
         private bool IsMultiMCPathValid()
         {
             // Check if the directory exists at the specified path
-            if (Directory.Exists(multiMCPathTextBox.Text))
-                return true;
-            else
-                return false;
+            return Directory.Exists(multiMCPathTextBox.Text);
         }
 
-        // This method updates the text and color of the statusLabel
         private void UpdateStatusLabel(string text, Color color)
         {
             statusLabel.ForeColor = color;
             statusLabel.Text = text;
         }
 
-        //Download and install the file
-        private async Task InstallFile(Stream stream, FileStream fileStream, long? contentLength)
+        private async Task InstallModpackFile(string? downloadUrl, string filePath)
         {
-            int bufferSize = 8192;
-            byte[] buffer = new byte[bufferSize];
-            long totalBytesRead = 0;
-            int bytesRead;
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            while ((bytesRead = await stream.ReadAsync(buffer, 0, bufferSize)) != 0)
+            if (downloadUrl == null)
             {
-                await fileStream.WriteAsync(buffer, 0, bytesRead);
-                totalBytesRead += bytesRead;
-                UpdateProgress(totalBytesRead, contentLength, stopwatch);
+                throw new ArgumentNullException(nameof(downloadUrl));
             }
 
-            // Ensure that the FileStream is properly disposed of before attempting to extract its contents
-            fileStream.Dispose();
-
-            // Check if the download is complete
-            if (totalBytesRead == contentLength)
+            using (HttpClient client = new HttpClient())
             {
-                // Update the statusLabel text and color
-                UpdateStatusLabel("Creating Instance Folder", Color.Blue);
-                // Update the statusLabel text and color
-                UpdateStatusLabel("Extracting Downloaded File", Color.Blue);
-                // Extract the contents of the downloaded file to the instance folder
-                string instancePath = ExtractDownloadedFile(fileStream.Name);
-                // Install optifine
-                if (optifineCheckBox.Checked)
+                HttpResponseMessage response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                if (response.IsSuccessStatusCode)
                 {
-                    UpdateStatusLabel("Downloading Optifine", Color.Blue);
-                    string optifineDownloadUrl = "https://drive.google.com/u/0/uc?id=1nR5ob2lm9RTMiczTlKiq5jCvvIFrhM_7&export=download";
-                    string optifineFilePath = Path.Combine(instancePath, ".minecraft", "mods", "OptiFine.jar");
-                    using (HttpClient client = new HttpClient())
+                    long? contentLength = response.Content.Headers.ContentLength;
+                    int bufferSize = 8192;
+                    byte[] buffer = new byte[bufferSize];
+                    long totalBytesRead = 0;
+                    int bytesRead;
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    using (Stream downloadStream = await response.Content.ReadAsStreamAsync())
+                    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                     {
-                        HttpResponseMessage response = await client.GetAsync(optifineDownloadUrl);
-                        response.EnsureSuccessStatusCode();
-                        using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
-                                opFileStream = new FileStream(optifineFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, true))
+                        while ((bytesRead = await downloadStream.ReadAsync(buffer, 0, bufferSize)) != 0)
                         {
-                            totalBytesRead = 0;
-                            contentLength = response.Content.Headers.ContentLength;
-                            stopwatch.Restart();
-                            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize)) != 0)
-                            {
-                                await opFileStream.WriteAsync(buffer, 0, bytesRead);
-                                totalBytesRead += bytesRead;
-                                UpdateProgress(totalBytesRead, contentLength, stopwatch);
-                            }
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            UpdateProgress(totalBytesRead, contentLength, stopwatch);
+                        }
+
+                        // Check if the download is complete
+                        if (totalBytesRead == contentLength)
+                        {
+                            await ExtractModpackFile(fileStream);
                         }
                     }
                 }
-                // Change pack settings
-                ChangePackSetting(instancePath);
+            }
+        }
+
+        private async Task ExtractModpackFile(FileStream fileStream)
+        {
+            // Update the statusLabel text and color
+            UpdateStatusLabel("Extracting Downloaded File", Color.Blue);
+            // Extract the contents of the downloaded file to the instance folder
+            string instancePath = ExtractDownloadedFile(fileStream.Name);
+            // Install optifine
+            if (optifineCheckBox.Checked)
+            {
+                await InstallOptifine(instancePath);
+            }
+            // Change pack settings
+            ChangePackSetting(instancePath);
+        }
+
+        private async Task InstallOptifine(string instancePath)
+        {
+            UpdateStatusLabel("Downloading Optifine", Color.Blue);
+            string optifineDownloadUrl = "https://drive.google.com/u/0/uc?id=1nR5ob2lm9RTMiczTlKiq5jCvvIFrhM_7&export=download";
+            string optifineFilePath = Path.Combine(instancePath, ".minecraft", "mods", "OptiFine.jar");
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(optifineDownloadUrl);
+                response.EnsureSuccessStatusCode();
+                long? contentLength = response.Content.Headers.ContentLength;
+                int bufferSize = 8192;
+                byte[] buffer = new byte[bufferSize];
+                long totalBytesRead = 0;
+                int bytesRead;
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                        opFileStream = new FileStream(optifineFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, true))
+                {
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize)) != 0)
+                    {
+                        await opFileStream.WriteAsync(buffer, 0, bytesRead);
+                        totalBytesRead += bytesRead;
+                        UpdateProgress(totalBytesRead, contentLength, stopwatch);
+                    }
+                }
             }
         }
 
 
-        //Change the pack setting
         private void ChangePackSetting(string instancePath)
         {
-            // Write to instance.cfg
-            string instanceCfgPath = Path.Combine(instancePath, "instance.cfg");
-            string[] instanceCfgLines = new string[]
+            // Set the instance configuration file path and content
+            string instanceConfigPath = Path.Combine(instancePath, "instance.cfg");
+            string[] instanceConfigLines = new string[]
             {
-                "InstanceType=OneSix",
-                "JavaPath=javaw",
-                "JoinServerOnLaunch=false",
-                "JvmArgs=--illegal-access=warn -Djava.security.manager=allow -Dfile.encoding=UTF-8 --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming --add-opens java.desktop/sun.awt.image=ALL-UNNAMED --add-modules jdk.dynalink --add-opens jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED --add-modules java.sql.rowset --add-opens java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED",
-                "MaxMemAlloc=8192",
-                "MinMemAlloc=6144",
-                "OverrideCommands=false",
-                "OverrideConsole=false",
-                "OverrideGameTime=false",
-                "OverrideJavaArgs=true",
-                "OverrideJavaLocation=true",
-                "OverrideMemory=true",
-                "OverrideNativeWorkarounds=false",
-                "OverrideWindow=false",
-                "PermGen=128",
-                "iconKey=default",
-                "name=" + versionListBox.SelectedItem.ToString(),
-                "notes="
+        "InstanceType=OneSix",
+        "JavaPath=javaw",
+        "JoinServerOnLaunch=false",
+        "JvmArgs=--illegal-access=warn -Djava.security.manager=allow -Dfile.encoding=UTF-8 --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming --add-opens java.desktop/sun.awt.image=ALL-UNNAMED --add-modules jdk.dynalink --add-opens jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED --add-modules java.sql.rowset --add-opens java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED",
+        "MaxMemAlloc=8192",
+        "MinMemAlloc=6144",
+        "OverrideCommands=false",
+        "OverrideConsole=false",
+        "OverrideGameTime=false",
+        "OverrideJavaArgs=true",
+        "OverrideJavaLocation=true",
+        "OverrideMemory=true",
+        "OverrideNativeWorkarounds=false",
+        "OverrideWindow=false",
+        "PermGen=128",
+        "iconKey=default",
+        $"name={versionListBox.SelectedItem.ToString()}",
+        "notes="
             };
-            File.WriteAllLines(instanceCfgPath, instanceCfgLines);
+            File.WriteAllLines(instanceConfigPath, instanceConfigLines);
 
-            // Write to mmc-pack.json
-            // Don't indent the string line
-            string mmcPackJsonPath = Path.Combine(instancePath, "mmc-pack.json");
-            string mmcPackJsonContent = @"{
+            // Set the MMC pack file path and content
+            string mmcPackFilePath = Path.Combine(instancePath, "mmc-pack.json");
+            string mmcPackFileContent = @"{
     ""components"": [
         {
             ""cachedName"": ""LWJGL 3"",
@@ -219,39 +238,20 @@ namespace GTNH_Manager
     ],
     ""formatVersion"": 1
 }";
-            File.WriteAllText(mmcPackJsonPath, mmcPackJsonContent);
+            File.WriteAllText(mmcPackFilePath, mmcPackFileContent);
         }
 
-        // This method updates the download progress bar and label with the download progress
-        private DateTime _lastUpdateTime = DateTime.MinValue;
-        private string _lastRemainingTime = "";
-
-        // This method updates the download progress bar and label with the download progress
         private void UpdateProgress(long totalBytesRead, long? contentLength, Stopwatch stopwatch)
         {
-            int percentComplete = 0;
-            if (contentLength.HasValue)
-            {
-                percentComplete = (int)((totalBytesRead * 1d) / (contentLength * 1d) * 100);
-            }
+            double? percentComplete = contentLength.HasValue ? (totalBytesRead * 1d) / (contentLength * 1d) * 100 : 0;
             double bytesPerSecond = totalBytesRead / stopwatch.Elapsed.TotalSeconds;
-            string speed;
-            if (bytesPerSecond / 1024 / 1024 > 1)
-            {
-                speed = $"{bytesPerSecond / 1024 / 1024:F2} MB/s";
-            }
-            else
-            {
-                speed = $"{bytesPerSecond / 1024:F2} KB/s";
-            }
-            if (percentComplete > 100)
-                percentComplete = 100;
-            progressBar.Value = percentComplete;
+            string speed = bytesPerSecond / 1024 / 1024 > 1 ? $"{bytesPerSecond / 1024 / 1024:F2} MB/s" : $"{bytesPerSecond / 1024:F2} KB/s";
+            progressBar.Value = Math.Min((int)percentComplete, 100);
 
             // Update the progressLabel.Text only once every second
-            if ((DateTime.Now - _lastUpdateTime).TotalSeconds >= 1)
+            if ((DateTime.Now - lastUpdateTime).TotalSeconds >= 1)
             {
-                string progressText = $"{percentComplete}% ({Math.Min(totalBytesRead, contentLength.GetValueOrDefault()) / 1024 / 1024:F2} / {contentLength / 1024 / 1024:F2} MB), Download speed: {speed}, ";
+                string progressText = $"{(int)percentComplete}% ({Math.Min(totalBytesRead, contentLength.GetValueOrDefault()) / (double)(1024 * 1024):F2} / {contentLength / (double)(1024 * 1024):F2} MB), Download speed: {speed}, ";
 
                 TimeSpan remainingTime = TimeSpan.FromSeconds(3600);
                 if (contentLength.HasValue && bytesPerSecond > 0)
@@ -259,20 +259,19 @@ namespace GTNH_Manager
                     long remainingBytes = contentLength.Value - totalBytesRead;
                     double remainingSeconds = remainingBytes / bytesPerSecond;
                     remainingTime = TimeSpan.FromSeconds(remainingSeconds);
-                    _lastRemainingTime = remainingTime.ToString(@"hh\:mm\:ss");
+                    lastRemainingTime = remainingTime.ToString(@"hh\:mm\:ss");
                 }
-                progressText += $" Time remaining: {_lastRemainingTime}";
+                progressText += $" Time remaining: {lastRemainingTime}";
 
                 progressLabel.Text = progressText;
 
-                _lastUpdateTime = DateTime.Now;
+                lastUpdateTime = DateTime.Now;
             }
         }
 
-        // This method extracts the contents of the downloaded file to the instance folder, deletes the downloaded file, and returns the path of the folder that was extracted from the jar file
         private string ExtractDownloadedFile(string filePath)
         {
-            string instancePath = Path.Combine(multiMCPathTextBox.Text, "instances");
+            string instanceFolderPath = Path.Combine(multiMCPathTextBox.Text, "instances");
 
             using (Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(filePath))
             {
@@ -289,7 +288,7 @@ namespace GTNH_Manager
                     }
                 };
 
-                zip.ExtractAll(instancePath);
+                zip.ExtractAll(instanceFolderPath);
             }
 
             // Ensure that all streams are properly disposed of before attempting to delete the file
@@ -299,23 +298,7 @@ namespace GTNH_Manager
             File.Delete(filePath);
 
             // Return the path of the folder that was extracted from the jar file
-            return Path.Combine(instancePath, "GT New Horizons " + GetSelectedModpackVersionNumber());
-        }
-
-        // Get selected modpack version number
-        private string? GetSelectedModpackVersionNumber()
-        {
-            string? version = versionListBox.SelectedItem.ToString();
-            if (version != null)
-            {
-                int index = version.IndexOf(" ");
-                if (index != -1)
-                {
-                    version = version.Substring(0, index);
-                }
-                return version;
-            }
-            return null;
+            return Path.Combine(instanceFolderPath, $"GT New Horizons {versionListBox.SelectedItem.ToString()}");
         }
     }
 }

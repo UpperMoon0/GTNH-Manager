@@ -30,13 +30,14 @@
         {
             versionListBox = new ListBox();
             chooseVersionLabel = new Label();
-            downloadButton = new Button();
+            installButton = new Button();
             multiMCPathTextBox = new TextBox();
             multiMCPathLabel = new Label();
             progressBar = new ProgressBar();
             progressLabel = new Label();
             statusLabel = new Label();
             optifineCheckBox = new CheckBox();
+            creditLabel = new Label();
             SuspendLayout();
             // 
             // versionListBox
@@ -57,16 +58,16 @@
             chooseVersionLabel.TabIndex = 1;
             chooseVersionLabel.Text = "Choose a version";
             // 
-            // downloadButton
+            // installButton
             // 
-            downloadButton.Font = new Font("Segoe UI", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            downloadButton.Location = new Point(12, 27);
-            downloadButton.Name = "downloadButton";
-            downloadButton.Size = new Size(201, 94);
-            downloadButton.TabIndex = 2;
-            downloadButton.Text = "Install";
-            downloadButton.UseVisualStyleBackColor = true;
-            downloadButton.Click += downloadButton_Click;
+            installButton.Font = new Font("Segoe UI", 20F, FontStyle.Regular, GraphicsUnit.Point);
+            installButton.Location = new Point(12, 27);
+            installButton.Name = "installButton";
+            installButton.Size = new Size(201, 94);
+            installButton.TabIndex = 2;
+            installButton.Text = "Install";
+            installButton.UseVisualStyleBackColor = true;
+            installButton.Click += installButton_Click;
             // 
             // multiMCPathTextBox
             // 
@@ -95,7 +96,7 @@
             // 
             progressLabel.AutoSize = true;
             progressLabel.Location = new Point(219, 53);
-            progressLabel.Name = "downloadProgressLabel";
+            progressLabel.Name = "progressLabel";
             progressLabel.Size = new Size(0, 15);
             progressLabel.TabIndex = 6;
             // 
@@ -118,23 +119,32 @@
             optifineCheckBox.Text = "Install Optifine";
             optifineCheckBox.UseVisualStyleBackColor = true;
             // 
+            // creditLabel
+            // 
+            creditLabel.AutoSize = true;
+            creditLabel.Location = new Point(680, 426);
+            creditLabel.Name = "creditLabel";
+            creditLabel.Size = new Size(108, 15);
+            creditLabel.TabIndex = 9;
+            creditLabel.Text = "Developed by Nhat";
+            // 
             // GTNHManager
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(creditLabel);
             Controls.Add(optifineCheckBox);
             Controls.Add(statusLabel);
             Controls.Add(progressLabel);
             Controls.Add(progressBar);
             Controls.Add(multiMCPathLabel);
             Controls.Add(multiMCPathTextBox);
-            Controls.Add(downloadButton);
+            Controls.Add(installButton);
             Controls.Add(chooseVersionLabel);
             Controls.Add(versionListBox);
             Name = "GTNHManager";
-            Text = "GTNH Manager " + version;
-            Load += Form1_Load;
+            Text = "GT: New Horizons Manager " + version;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -143,12 +153,13 @@
 
         private ListBox versionListBox;
         private Label chooseVersionLabel;
-        private Button downloadButton;
+        private Button installButton;
         private TextBox multiMCPathTextBox;
         private Label multiMCPathLabel;
         private ProgressBar progressBar;
         private Label progressLabel;
         private Label statusLabel;
         private CheckBox optifineCheckBox;
+        private Label creditLabel;
     }
 }
