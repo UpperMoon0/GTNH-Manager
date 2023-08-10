@@ -73,7 +73,7 @@
             // 
             multiMCPathTextBox.Location = new Point(12, 142);
             multiMCPathTextBox.Name = "multiMCPathTextBox";
-            multiMCPathTextBox.Size = new Size(207, 23);
+            multiMCPathTextBox.Size = new Size(233, 23);
             multiMCPathTextBox.TabIndex = 3;
             // 
             // multiMCPathLabel
@@ -144,7 +144,6 @@
             Controls.Add(chooseVersionLabel);
             Controls.Add(versionListBox);
             Name = "GTNHManager";
-            Text = "GT: New Horizons Manager " + version;
             ResumeLayout(false);
             PerformLayout();
         }

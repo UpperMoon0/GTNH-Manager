@@ -3,7 +3,6 @@ D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-wi
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\GTNH_Manager.runtimeconfig.json
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\GTNH_Manager.dll
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\GTNH_Manager.pdb
-D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\DotNetZip.dll
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\Newtonsoft.Json.dll
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.csproj.AssemblyReference.cache
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.GTNHManager.resources
@@ -18,3 +17,4 @@ D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\re
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.pdb
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.genruntimeconfig.cache
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\ref\GTNH_Manager.dll
+D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\ICSharpCode.SharpZipLib.dll
