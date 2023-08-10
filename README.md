@@ -1,2 +1,2 @@
 # GTNH-Manager
-GTNH download and update app
+GT: New Horizons download and update app
