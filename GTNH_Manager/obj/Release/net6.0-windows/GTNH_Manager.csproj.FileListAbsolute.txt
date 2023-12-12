@@ -18,3 +18,4 @@ D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GT
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.genruntimeconfig.cache
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\ref\GTNH_Manager.dll
 D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\bin\Release\Release\net6.0-windows\ICSharpCode.SharpZipLib.dll
+D:\Dev\Workspace\C_Sharp\GTNH-Manager\GTNH_Manager\obj\Release\net6.0-windows\GTNH_Manager.sourcelink.json

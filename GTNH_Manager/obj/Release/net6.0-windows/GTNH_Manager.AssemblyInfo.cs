@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GTNH_Manager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+720937a095db05559b248d8e64a6b9ff0223297f")]
 [assembly: System.Reflection.AssemblyProductAttribute("GTNH_Manager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GTNH_Manager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
