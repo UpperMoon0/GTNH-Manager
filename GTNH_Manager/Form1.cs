@@ -25,6 +25,7 @@ namespace GTNH_Manager
                 multiMCPathTextBox.Enabled = false;
                 versionListBox.Enabled = false;
                 optifineCheckBox.Enabled = false;
+                suCheckBox.Enabled = false;
 
                 string? selectedVersion = versionListBox.SelectedItem.ToString();
 
@@ -35,6 +36,7 @@ namespace GTNH_Manager
                     Stage3();
                     Stage4();
                     await Stage5();
+                    await Stage6();
 
                     progressLabel.Text = "";
                     UpdateStatusLabel("Installation complete", Color.Green);
@@ -48,6 +50,7 @@ namespace GTNH_Manager
                 multiMCPathTextBox.Enabled = true;
                 versionListBox.Enabled = true;
                 optifineCheckBox.Enabled = true;
+                suCheckBox.Enabled = true;
             }
             else
             {
@@ -135,7 +138,7 @@ namespace GTNH_Manager
                 }
             });
         }
-        private void Stage3() 
+        private void Stage3()
         {
             // Delete extracted zip file
             UpdateStatusLabel("Deleting modpack zip file", Color.Blue);
@@ -219,7 +222,7 @@ namespace GTNH_Manager
 }";
             File.WriteAllText(mmcPackFilePath, mmcPackFileContent);
         }
-        private async Task Stage5() 
+        private async Task Stage5()
         {
             // Install optifine
             UpdateStatusLabel("Downloading Optifine", Color.Blue);
@@ -242,6 +245,36 @@ namespace GTNH_Manager
                         while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize)) != 0)
                         {
                             await opFileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            UpdateProgress(totalBytesRead, contentLength, stopwatch);
+                        }
+                    }
+                }
+            }
+        }
+        private async Task Stage6()
+        {
+            // Install server utilities
+            UpdateStatusLabel("Downloading Server Utilities", Color.Blue);
+            if (suCheckBox.Checked)
+            {
+                string serverUtilitiesFilePath = Path.Combine(GetModpackFolderPath(), ".minecraft", "mods", "ServerUtilities.jar");
+                using (HttpClient client = new HttpClient())
+                {
+                    HttpResponseMessage response = await client.GetAsync(ModpackVersion.SuDownloadUrl);
+                    response.EnsureSuccessStatusCode();
+                    long? contentLength = response.Content.Headers.ContentLength;
+                    int bufferSize = 8192;
+                    byte[] buffer = new byte[bufferSize];
+                    long totalBytesRead = 0;
+                    int bytesRead;
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    using (Stream contentStream = await response.Content.ReadAsStreamAsync(),
+                            suFileStream = new FileStream(serverUtilitiesFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize, true))
+                    {
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize)) != 0)
+                        {
+                            await suFileStream.WriteAsync(buffer, 0, bytesRead);
                             totalBytesRead += bytesRead;
                             UpdateProgress(totalBytesRead, contentLength, stopwatch);
                         }

@@ -37,7 +37,9 @@
             progressLabel = new Label();
             statusLabel = new Label();
             optifineCheckBox = new CheckBox();
+            suCheckBox = new CheckBox();
             creditLabel = new Label();
+
             SuspendLayout();
             // 
             // versionListBox
@@ -119,6 +121,16 @@
             optifineCheckBox.Text = "Install Optifine";
             optifineCheckBox.UseVisualStyleBackColor = true;
             // 
+            // suCheckBox
+            // 
+            suCheckBox.AutoSize = true;
+            suCheckBox.Location = new Point(142, 211);
+            suCheckBox.Name = "checkBox1";
+            suCheckBox.Size = new Size(103, 19);
+            suCheckBox.TabIndex = 10;
+            suCheckBox.Text = "Install Server Utilities";
+            suCheckBox.UseVisualStyleBackColor = true;
+            // 
             // creditLabel
             // 
             creditLabel.AutoSize = true;
@@ -133,6 +145,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(suCheckBox);
             Controls.Add(creditLabel);
             Controls.Add(optifineCheckBox);
             Controls.Add(statusLabel);
@@ -160,5 +173,6 @@
         private Label statusLabel;
         private CheckBox optifineCheckBox;
         private Label creditLabel;
+        private CheckBox suCheckBox;
     }
 }
