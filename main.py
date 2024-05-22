@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QListWidget, QMessageBox
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from versions import Versions
@@ -43,6 +44,7 @@ class GTNHManager(QWidget):
         self.install_thread = None
         self.download_thread = None
         self.setWindowTitle("GTNH Manager 0.4")
+        self.setWindowIcon(QIcon('icon.ico'))
 
         self.layout = QVBoxLayout()
 
