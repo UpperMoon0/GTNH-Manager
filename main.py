@@ -4,6 +4,13 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from versions import Versions
 from service import download, install
 import asyncio
+import logging
+
+
+logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+
+
+app_version = "0.4.1"
 
 
 class DownloadThread(QThread):
@@ -43,8 +50,8 @@ class GTNHManager(QWidget):
 
         self.install_thread = None
         self.download_thread = None
-        self.setWindowTitle("GTNH Manager 0.4")
-        self.setWindowIcon(QIcon('icon.ico'))
+        self.setWindowTitle("GTNH Manager " + app_version)
+        self.setWindowIcon(QIcon('icon.png'))
 
         self.layout = QVBoxLayout()
 
@@ -71,22 +78,25 @@ class GTNHManager(QWidget):
         self.setLayout(self.layout)
 
     def on_install_clicked(self):
-        selected_version = self.version_list.currentItem()
-        if selected_version is None:
-            QMessageBox.warning(self, "Error", "Please select a version")
-            return
+        try:
+            selected_version = self.version_list.currentItem()
+            if selected_version is None:
+                QMessageBox.warning(self, "Error", "Please select a version")
+                return
 
-        download_url = self.versions.get_from_dict(selected_version.text())
-        destination_path = self.input_field.text().strip()
-        if not destination_path:
-            QMessageBox.warning(self, "Error", "Please enter a path")
-            return
+            download_url = self.versions.get_from_dict(selected_version.text())
+            destination_path = self.input_field.text().strip()
+            if not destination_path:
+                QMessageBox.warning(self, "Error", "Please enter a path")
+                return
 
-        self.status_label.setText("Downloading...")
-        self.download_thread = DownloadThread(download_url, self.on_download_progress)
-        self.download_thread.download_finished.connect(self.on_download_finished)
-        self.download_thread.download_progress.connect(self.on_download_progress)
-        self.download_thread.start()
+            self.status_label.setText("Downloading...")
+            self.download_thread = DownloadThread(download_url, self.on_download_progress)
+            self.download_thread.download_finished.connect(self.on_download_finished)
+            self.download_thread.download_progress.connect(self.on_download_progress)
+            self.download_thread.start()
+        except Exception as e:
+            logging.error("Exception occurred", exc_info=True)
 
     def on_download_progress(self, bytes_read, total_size):
         percentage = bytes_read / total_size * 100
@@ -105,7 +115,12 @@ class GTNHManager(QWidget):
         self.status_label.setText(f"Installing... {percentage:.2f}%")
 
     def on_install_finished(self):
-        self.status_label.setText("Done")
+        try:
+            self.status_label.setText("Done")
+        except FileNotFoundError as e:
+            logging.error("FileNotFoundError occurred", exc_info=True)
+        except Exception as e:
+            logging.error("Unexpected exception occurred", exc_info=True)
 
 
 if __name__ == "__main__":
