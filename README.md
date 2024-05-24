@@ -8,4 +8,4 @@ Installing GTNH manually can be quite a hassle, especially when it comes to inst
 
 ## Technology
 
-The application is built using the python library PyQT.
+The application is built using the python library PyQt5.
